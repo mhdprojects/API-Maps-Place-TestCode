@@ -1,0 +1,69 @@
+{
+  "openapi": "3.1.0",
+  "info": { "title": "Maps LLM Backend", "version": "1.0.0" },
+  "paths": {
+    "/api/places/search": {
+      "post": {
+        "operationId": "find_places",
+        "summary": "Cari tempat via Google Maps (geocode + places)",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["query", "location_text"],
+                "properties": {
+                  "query": { "type": "string" },
+                  "location_text": { "type": "string" },
+                  "radius_m": { "type": "integer", "minimum": 200, "maximum": 10000 },
+                  "open_now": { "type": "boolean" },
+                  "max_results": { "type": "integer", "minimum": 1, "maximum": 20 }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Hasil tempat + URL embed & directions",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "center": {
+                      "type": "object",
+                      "properties": { "lat": { "type": "number" }, "lng": { "type": "number" } }
+                    },
+                    "embed_url": { "type": "string" },
+                    "results": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "place_id": { "type": "string" },
+                          "name": { "type": "string" },
+                          "address": { "type": "string" },
+                          "rating": { "type": "number" },
+                          "user_ratings_total": { "type": "integer" },
+                          "price_level": { "type": "integer" },
+                          "location": {
+                            "type": "object",
+                            "properties": { "lat": { "type": "number" }, "lng": { "type": "number" } }
+                          },
+                          "maps_url": { "type": "string" },
+                          "directions_url": { "type": "string" }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
