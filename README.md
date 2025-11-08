@@ -21,7 +21,7 @@ It also includes a request-logging middleware that prints each incoming request 
 
 ```bash
 git clone <repo-url>
-cd Heypico-LLM-Maps-Assistant
+cd API-Maps-Place-TestCode
 npm install
 ```
 
