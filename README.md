@@ -149,3 +149,5 @@ curl "http://localhost:8787/api/your-endpoint"
 ```
 
 Then check the terminal where the server is running — you should see a request log line.
+
+For instructions on configuring this API as a callable OpenAPI "tool" (ChatGPT Plugin or local web GUI), see `TOOLING.md`.
