@@ -20,7 +20,7 @@ It also includes a request-logging middleware that prints each incoming request 
 1. Clone the repository and install dependencies:
 
 ```bash
-git clone <repo-url>
+git clone https://github.com/mhdprojects/API-Maps-Place-TestCode.git
 cd API-Maps-Place-TestCode
 npm install
 ```
