@@ -1,11 +1,19 @@
 {
   "openapi": "3.1.0",
-  "info": { "title": "Maps LLM Backend", "version": "1.0.0" },
+  "info": {
+    "title": "CodeTest2 — LLM Maps Assistant API",
+    "version": "1.0.0",
+    "description": "Backend for place search (Google Geocoding + Places) that returns a Maps Embed URL and Directions links."
+  },
+  "servers": [
+    { "url": "http://localhost:8787", "description": "Local Dev" }
+  ],
   "paths": {
     "/api/places/search": {
       "post": {
         "operationId": "find_places",
-        "summary": "Cari tempat via Google Maps (geocode + places)",
+        "summary": "Search places to eat/visit, etc.",
+        "description": "Geocode a textual location → Places Text Search → return place list + embed_url (Maps Embed) + directions_url (Google Maps).",
         "requestBody": {
           "required": true,
           "content": {
@@ -14,11 +22,44 @@
                 "type": "object",
                 "required": ["query", "location_text"],
                 "properties": {
-                  "query": { "type": "string" },
-                  "location_text": { "type": "string" },
-                  "radius_m": { "type": "integer", "minimum": 200, "maximum": 10000 },
-                  "open_now": { "type": "boolean" },
-                  "max_results": { "type": "integer", "minimum": 1, "maximum": 20 }
+                  "query": {
+                    "type": "string",
+                    "description": "Keyword/category. Ex: 'halal ramen', 'coffee shop', 'cheap seafood'."
+                  },
+                  "location_text": {
+                    "type": "string",
+                    "description": "Area or anchor address. Ex: 'Dago, Bandung', 'Sudirman Jakarta'."
+                  },
+                  "radius_m": {
+                    "type": "integer",
+                    "minimum": 200,
+                    "maximum": 10000,
+                    "default": 2000,
+                    "description": "Search radius in meters (200–10000)."
+                  },
+                  "open_now": {
+                    "type": "boolean",
+                    "description": "Filter places that are open now."
+                  },
+                  "max_results": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "maximum": 20,
+                    "default": 10,
+                    "description": "Number of results to return (1–20)."
+                  }
+                }
+              },
+              "examples": {
+                "example": {
+                  "summary": "Find halal ramen near Dago",
+                  "value": {
+                    "query": "halal ramen",
+                    "location_text": "Dago, Bandung",
+                    "radius_m": 2000,
+                    "open_now": true,
+                    "max_results": 5
+                  }
                 }
               }
             }
@@ -26,7 +67,7 @@
         },
         "responses": {
           "200": {
-            "description": "Hasil tempat + URL embed & directions",
+            "description": "Success. Returns place results + Maps Embed URL + Directions URLs.",
             "content": {
               "application/json": {
                 "schema": {
@@ -34,9 +75,12 @@
                   "properties": {
                     "center": {
                       "type": "object",
-                      "properties": { "lat": { "type": "number" }, "lng": { "type": "number" } }
+                      "properties": {
+                        "lat": { "type": "number" },
+                        "lng": { "type": "number" }
+                      }
                     },
-                    "embed_url": { "type": "string" },
+                    "embed_url": { "type": "string", "description": "URL for Google Maps Embed <iframe> (search mode)." },
                     "results": {
                       "type": "array",
                       "items": {
@@ -50,20 +94,52 @@
                           "price_level": { "type": "integer" },
                           "location": {
                             "type": "object",
-                            "properties": { "lat": { "type": "number" }, "lng": { "type": "number" } }
+                            "properties": {
+                              "lat": { "type": "number" },
+                              "lng": { "type": "number" }
+                            }
                           },
-                          "maps_url": { "type": "string" },
-                          "directions_url": { "type": "string" }
+                          "maps_url": { "type": "string", "description": "Google Maps link to the place." },
+                          "directions_url": { "type": "string", "description": "Google Maps Directions link to the place." }
                         }
                       }
+                    }
+                  }
+                },
+                "examples": {
+                  "sample": {
+                    "summary": "Sample response",
+                    "value": {
+                      "center": { "lat": -6.9, "lng": 107.6 },
+                      "embed_url": "https://www.google.com/maps/embed/v1/search?key=...&q=halal%20ramen%20near%20Dago%20Bandung",
+                      "results": [
+                        {
+                          "place_id": "xxxx",
+                          "name": "Halal Ramen Dago",
+                          "address": "Jl. ....",
+                          "rating": 4.5,
+                          "user_ratings_total": 532,
+                          "price_level": 2,
+                          "location": { "lat": -6.891, "lng": 107.611 },
+                          "maps_url": "https://www.google.com/maps/search/?api=1&query_place_id=xxxx",
+                          "directions_url": "https://www.google.com/maps/dir/?api=1&destination_place_id=xxxx"
+                        }
+                      ]
                     }
                   }
                 }
               }
             }
+          },
+          "400": {
+            "description": "Invalid payload (e.g., missing 'query' or 'location_text')."
+          },
+          "500": {
+            "description": "Server error or error from Google APIs."
           }
         }
       }
     }
-  }
+  },
+  "components": {}
 }

@@ -16,6 +16,18 @@ export function createApp() {
 
   app.use(express.json());
 
+  app.use((req, res, next) => {
+    const start = Date.now();
+    const ip = (req.headers['x-forwarded-for'] || req.ip || (req.socket && req.socket.remoteAddress)) as string || '';
+    res.on('finish', () => {
+      const duration = Date.now() - start;
+      console.log(
+        `[${new Date().toISOString()}] ${req.method} ${req.originalUrl || req.url} ${res.statusCode} - ${ip} - ${duration}ms`
+      );
+    });
+    next();
+  });
+
   app.get('/map', (req, res) => {
     const embed = String(req.query.embed_url || '');
     if (!embed.startsWith('https://www.google.com/maps/embed/')) {
